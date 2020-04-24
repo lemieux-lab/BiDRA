@@ -1,0 +1,598 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+.loader {
+  border: 5px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 5px solid #f0ad4e;
+  width: 25px;
+  height: 25px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
+
+{% block analyze %}
+
+<script>
+	$(document).ready(function(){
+        var show_btn = $('.submit-wait');
+
+        show_btn.click(function(){
+        	console.log('loading')
+      		$("#myModal").modal('show');
+      		console.log('should have shown')
+      	});
+
+        $(".inhibition").click(function() {
+        	console.log("inhibition")
+        	document.getElementsByName("HDR")[0].setAttribute("Value", "Maximal Response")
+        	document.getElementsByName("HDR_mu1")[0].setAttribute("Value", "100")
+        	document.getElementsByName("HDR_mu2")[0].setAttribute("Value", "100")
+        	document.getElementsByName("LDR")[0].setAttribute("Value", "Minimal Response")
+        	document.getElementsByName("LDR_mu1")[0].setAttribute("Value", "0")
+        	document.getElementsByName("LDR_mu2")[0].setAttribute("Value", "0")
+        });
+
+        $(".acitivity").click(function() {
+        	console.log("acitivity")
+        	document.getElementsByName("HDR")[0].setAttribute("Value", "Minimal Response")
+        	document.getElementsByName("HDR_mu1")[0].setAttribute("Value", "0")
+        	document.getElementsByName("HDR_mu2")[0].setAttribute("Value", "0")
+        	document.getElementsByName("LDR")[0].setAttribute("Value", "Maximal Response")
+        	document.getElementsByName("LDR_mu1")[0].setAttribute("Value", "100")
+        	document.getElementsByName("LDR_mu2")[0].setAttribute("Value", "100")
+        });
+
+    });
+
+
+var data1 = [
+        [4.0, 99.50], [4.0, 99.25],
+        [3.5, 99.15], [3.5, 98.59],
+        [3.04, 97.46], [3.04, 96.65],
+        [2.56, 88.05], [2.56, 82.55],
+        [2.09, 58.84], [2.09, 51.07],
+        [1.61, 21.20], [1.61, 20.20],
+        [1.13, 4.45], [1.13, 15.50],
+        [0.66, 8.27], [0.66, 3.13],
+        ];
+
+var data2 = [
+        [4.0, 60.50], [4.0, 54.25],
+        [3.5, 56.15], [3.5, 50.59],
+        [3.04, 47.46], [3.04, 51.65],
+        [2.56, 38.05], [2.56, 42.55],
+        [2.09, 28.84], [2.09, 32.07],
+        [1.61, 21.20], [1.61, 20.20],
+        [1.13, 4.45], [1.13, 15.50],
+        [0.66, 2.27], [0.66, 8.13],
+        ];
+
+function donwload_csv1() {
+        var csv = '';
+        data1.forEach(function(row) {
+                csv += row.join(",");
+                csv += "\n";
+        });
+
+        console.log(csv);
+        var hiddenElement = document.createElement("a");
+        hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+        hiddenElement.target = '_blank';
+        hiddenElement.download = 'testDataset1.csv';
+        document.body.appendChild(hiddenElement);
+	hiddenElement.click();
+	document.body.removeChild(hiddenElement);
+};
+
+function donwload_csv2() {
+        var csv = '';
+        data2.forEach(function(row) {
+                csv += row.join(",");
+                csv += "\n";
+        });
+
+        console.log(csv);
+        var hiddenElement = document.createElement("a");
+        hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+        hiddenElement.target = '_blank';
+        hiddenElement.download = 'testDataset2.csv';
+        document.body.appendChild(hiddenElement);
+        hiddenElement.click();
+        document.body.removeChild(hiddenElement);
+};
+</script>
+
+<div class="container-fluid bg-light text-info">
+	<div class="modal" id="myModal" role="dialog">
+    	<div class="modal-dialog">
+          	<!-- Modal content-->
+     		<div class="modal-content">
+        		<div class="modal-header">
+          			<h4 class="modal-title">Please Wait...</h4>
+        		</div>
+        	
+	        	<div class="modal-body">
+	          		<center> <div class="loader"></div> </center>
+	        	</div>
+      		</div>  
+    	</div>
+	</div>
+
+	<div class="row">
+		<div class="col">
+			<h3 class='text-warning'>Comparaison <small class="text-muted">of two different dose-response datasets</small> </h3>
+		</div>
+
+	</div>
+
+	<ul class="nav nav-tabs">
+		<li><a data-toggle="tab" href="#aboutComparaison" class="text-secondary">About</a></li>
+
+		{% if graph %}
+		<li><a data-toggle="tab" href="#filesComparaison" class="text-secondary">Files</a></li>
+		<li class="active"><a data-toggle="tab" href="#plotsComparaison" class="text-secondary">Plots</a></li>
+
+		{% else %}
+		<li class="active"><a data-toggle="tab" href="#filesComparaison" class="text-secondary">Files</a></li>
+		<li><a data-toggle="tab" href="#plotsComparaison" class="text-secondary">Plots</a></li>
+		{% endif %}
+
+		<li><a data-toggle="tab" href="#pairwiseComparaison" class="text-secondary">Pairwise</a></li>
+		<li><a data-toggle="tab" href="#tablesComparaison" class="text-secondary">Tables</a></li>
+		<li><a data-toggle="tab" href="#logComparaison" class="text-secondary">Log</a></li>
+	</ul>
+
+	<div class="tab-content" id="tabsComparaison">
+		<div id="aboutComparaison" class="tab-pane fade in">
+			<h3>About Compare</h3>
+			<h4>Dose-response analysis</h4>
+            <p class="text-muted">A preliminary step of various research process, such as the drug discovery process, is to establish the efficacy of a chemical compound. A standard approach is to conduct dose-response (DR) experiments in which the responses to different concentrations of a compound of interest are measured. From these responses, the effects of the compound can be characterized in terms of four different metrics:</p>
+                <ul>
+                  <li>Low/High Dose Plateaus (LDP/HDP)<span class="text-muted">: the asymptotical responses generated for very low and very high doses of the compound;</span></li>
+                  <li>IC<sub>50</sub><span class="text-muted">: the dose needed to generate a response equivalent to 50% of the highest response;</span></li>
+                  <li>Slope<span class="text-muted">: the rapidity at which the responses transition between the two plateaus.</span></li>
+                </ul>
+			<p class="text-muted">These four metrics can be embedded into a single mathematical model (the log-logistic), in which the response \( f(x) \) can be modeled in term of a dose \( x \):</p>
+            <p> $$ f(x) = \mbox{LDP} + \frac {\mbox{HDP} - \mbox{LDP}} {1 + 10 ^ {\mbox{slope} \cdot \big ( \mbox{IC}_{50} - x \big )}}$$ </p>
+            <p class="text-muted">The metrics are normally estimated through non-linear regression with algorithm such as the Marquardt-Levenberg. Even though this approach is widely used, the results are <b>mainly representative of the data analyzed</b> and <b>the uncertainty within the data is ignored</b>. Using this approach could mislead our conclusions, espacillay when the data does not seem to be <em>sufficient</em>.</p>       
+            <p class="text-muted">We aim at implementing an approach for DR analysis able to characterize the uncertainty surrounding the metrics and able to accurately extrapolate our analysis to unobserved data.</p>
+            
+            <br>
+            <h4>Bayesian Inference</h4>
+            <p class="text-muted">Bayesian inference (Bi) is a statistical method that infer a <b>posterior</b> distribution for an initial hypothesis \( H \) given <b>prior</b> intuitive knowledge and some observed evidence \( E \). As new evidence are presented, the posterior distribution is updated using the <b>Baye’s theorem</b>. </p>
+            <p> $$ P(H \mid E) = \frac {P(E \mid H) \cdot P(H)} {P(E)} $$ </p>
+            <p class="text-muted"> A prior distribution represents our intuition or our believe of what the value of H should be. It is often based on previous observations and on theoretical concepts. The likelihood function, given a statistical model representing the observed evidence, evaluates the probability of reproducing our observations when H takes a certain value. Finally, the posterior distribution represents the probable values of H given our prior intuitions/beliefs of that distribution, and the observed evidence. </p>
+            
+            <br>
+            <h4>Dataset</h4>
+            <p class="text-muted">In order to infer a dose-response curve, a file with extension CSV must be uploaded. The dose-response data must be organized in two columns with the dose values in the first column and the response values in the second columns. The doses order must be coherent with the responses order. No indexing or column names are needed. </p>
+            <p class="text-muted">Any kind of DR data can be used.</p>
+            <p class="text-muted">A title for the analysis can be defined, as well as the labels for the dose and response axes. These descriptors will be used and represented in the returned graph. By default, the analysis is titled “<em>Curve Inference</em>”, and the axes are labeled “<em>Doses</em>” and “<em>Responses</em>” respectively.</p>
+            
+            <br>
+            <h4>BiDRA Infer</h4>
+            <p class="text-muted"> Given the uploaded dataset, BiDRA will infer a DR curve with a 95% confidence interval as well as a posterior distribution for every efficacy metrics.</p>
+            <p class="text-muted"> The Baye’s theorem is adapted to the DR context, where the hypothesis \( H \) is all the efficacy metrics such that \( \theta = [\mbox{LDP}, \mbox{HDP}, \mbox{IC}_{50}, \mbox{slope}] \), and where the evidence \( E \) are the experimental DR data, represented by \( (x,y) \).</p>
+            <p> $$ P(\theta \mid x, y) = \frac {P(y \mid \theta, x) \cdot P(\theta)} {P(x, y)} $$ </p>
+            <p class="text-muted">The likelihood function of our model assumes that the response for a given concentration is normally distributed around \( f(x; \theta)\) with a standard deviation of \( \sigma \) (infered by the model). Here, \( f(x; \theta)\) is the log-logistic model described above with specific values of the elements of \( \theta \).</p>
+            <p>$$P(y \mid \theta, x) = \mathcal{N} \big ( f(x; \theta), \sigma \big) $$ </p>
+            
+            <br>
+            <h5>Data Type</h5>
+            <p class="text-muted"> It is important to select the right data type. There are two possible types: <b>inhibition</b> or <b>activity</b>. For the former, the responses will increase with dosage whereas for the latter responses will decrease. Conceptually, these two types differ in the priors of their LDP and HDP.</p>
+
+            <br>
+            <h5>Prior Distribution</h5>
+            <p class="text-muted">As for the prior distribution, they are also assumed to be normal. By default, they are defined for rate data i.e. responses spanning from 0 to a 100%. The default priors for the maximal and minimal responses are centered at 100 and 0, respectively. The IC<sub>50</sub> default prior is centered at the median experimental dose. Finally, the default slope prior is centered at 1. We recommend using <b>wider</b> prior distributions which allows the prevalence of the experimental data in the inference.</p>
+            <p class="text-muted">All of the prior distribution parameters (\( \mu \) and \( \sigma \) of the normal distributions) can be modified. More informative labeling of the efficacy metrics can also be specified.</p>
+			
+		</div>
+
+		{% if graph %}
+		<div id="filesComparaison" class="tab-pane fade in">
+		{% else %}
+		<div id="filesComparaison" class="tab-pane fade in active">
+		{% endif %}
+			
+			<div class="row">
+				<br>
+			</div>
+
+			{% if form == "files" %}
+			<form action="/upload" method="post"  enctype="multipart/form-data">
+				<div class="row">
+					<div class="col-sm-5">
+
+						{% if error %}
+						<div class="alert alert-danger" role="alert">
+							{{ error }}
+						</div>
+						{% endif %}			
+					
+						<div class="form-group row">
+							<br>
+							<label for="dataset1" class="col-sm-3 col-form-label text-secondary">Dataset 1</label>
+
+							<div class="col">
+								<input type="file" class="form-control-file text-secondary" id="dataset1" name="dataset1">
+							</div>
+							<div class="col">
+                                                               <button onclick="donwload_csv1()" type="button" class="btn btn-info float-right btn-sm"><i class="fa fa-download"></i> Test Dataset1</button>
+                                                        </div>
+						</div>
+
+						<div class="form-group row">
+							<label for="labelDataset1" class="col-sm-3 col-form-label text-secondary">Label</label>
+
+							<div class="col">
+								<input type="text" class="form-control text-secondary" id="labelDataset1" name="labelDataset1" value="Dataset1" placeholder="Enter a label for the first dataset">
+							</div>
+						</div>
+						<br>
+
+						<div class="form-group row">
+							<br>
+							<label for="dataset2" class="col-sm-3 col-form-label text-secondary">Dataset 2</label>
+
+							<div class="col">
+								<input type="file" class="form-control-file text-secondary" id="dataset2" name="dataset2">
+							</div>
+							<div class="col">
+                                                               <button onclick="donwload_csv2()" type="button" class="btn btn-info float-right btn-sm"><i class="fa fa-download"></i> Test Dataset2</button>
+                                                        </div>
+						</div>
+
+						<div class="form-group row">
+							<label for="labelDataset2" class="col-sm-3 col-form-label text-secondary">Label</label>
+
+							<div class="col">
+								<input type="text" class="form-control text-secondary" id="labelDataset2" name="labelDataset2" value="Dataset2" placeholder="Enter a label for the second dataset">
+							</div>
+						</div>						
+					</div>
+
+					<div class="col-sm-1">
+					</div>
+
+					<div class="col-sm-5">
+						<div class="form-group row">
+							<br>
+							<label for="title" class="col-sm-3 col-form-label text-secondary">Title</label>
+
+							<div class="col">
+								<input type="text" class="form-control text-secondary" id="title" name="title" value="Curve Comparaison" placeholder="Enter a title for your graph">
+							</div>
+						</div>
+
+						<br>
+
+						<div class="form-group row">
+							<br>
+							<label for="xLabel" class="col-sm-3 col-form-label text-secondary">X-axis Label</label>
+
+							<div class="col">
+								<input type="text" class="form-control text-secondary" id="xLabel" name="xLabel" value="Doses" placeholder="Enter a label for the x-axis">
+							</div>
+						</div>
+
+						<br>
+
+						<div class="form-group row">
+							<br>
+							<label for="yLabel" class="col-sm-3 col-form-label text-secondary">Y-axis Label</label>
+
+							<div class="col">
+								<input type="text" class="form-control text-secondary" id="yLabel" name="yLabel" value="Responses" placeholder="Enter a label for the y-axis">
+							</div>
+						</div>
+
+					</div>	
+				</div>
+
+				<div class="form-group row">
+					<br><br><br>
+					<div class="col-sm-10">
+						<button type="submit" class="btn btn-warning submit-wait" name="submit" value="comparaison">Upload</button>
+					</div>
+				</div>
+			</form>
+
+			{% elif form == "priors" %}
+			<form action="/analyze" method="post"  enctype="multipart/form-data">
+				<div class="row">
+					<div class="col-sm-3">
+						<label class="row-form-label text-secondary">What kind of data are you analyzing?</label>
+
+						<div class="radio">
+							<label><input type="radio" name="responseType" class="choice inhibition" value="inhibition" checked>Inhibition</label>
+						</div>
+
+						<div class="radio">
+							<label><input type="radio" name="responseType" class="choice acitivity" value="activity">Activity</label>
+						</div>
+					</div>
+				</div>
+
+				<br><br>
+
+				<div class="row">
+					<div class="col-sm-12">
+						<label class="row-form-label text-secondary">Priors</label>
+
+						<div class="form-group row">
+					        <div class="col-sm-3">
+					        </div>
+
+					        <div class="col-sm-2">
+					        	<center><h4>Dataset1</h4></center>
+					        </div>
+
+					        <div class="col-sm-2">
+					        	<center><h4>Dataset2</h4></center>
+					        </div>
+					    </div>
+
+						<div class="form-group row">
+					        <div class="col-sm-3">
+					        </div>
+
+					        <div class="col-sm-1">
+					        	<center><h4>&mu;</h4></center>
+					        </div>
+
+					        <div class="col-sm-1">
+					        	<center><h4>&sigma;</h4></center>
+					        </div>
+					        <div class="col-sm-1">
+					        	<center><h4>&mu;</h4></center>
+					        </div>
+
+					        <div class="col-sm-1">
+					        	<center><h4>&sigma;</h4></center>
+					        </div>
+					    </div>
+
+					    <div class="form-group row">
+					        <label for="P1" class="col-sm-1 col-form-label" align="right">HDR - </label>
+
+							<div class="col-sm-2">
+								<input id="P1" class="form-control text-secondary" name="HDR" value="Maximal Response">
+							</div>
+
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="HDR_mu1" value="100">
+					        </div>
+
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="HDR_sigma1" value="10">
+					        </div>
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="HDR_mu2" value="100">
+					        </div>
+
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="HDR_sigma2" value="10">
+					        </div>
+					    </div>
+
+					    <div class="form-group row">
+					        <label for="P2" class="col-sm-1 col-form-label" align="right">LDR - </label>
+
+							<div class="col-sm-2">
+								<input id="P2" class="form-control text-secondary" name="LDR" value="Minimal Response">
+							</div>
+
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="LDR_mu1" value="0">
+					        </div>
+
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="LDR_sigma1" value="10">
+					        </div>
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="LDR_mu2" value="0">
+					        </div>
+
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="LDR_sigma2" value="10">
+					        </div>
+					    </div>
+
+					    <div class="form-group row">
+					        <label for="P3" class="col-sm-1 col-form-label" align="right">Inflexion - </label>
+							<div class="col-sm-2">
+								<input id="P3" class="form-control text-secondary" name="I" value="IC50">
+							</div>
+
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="I_mu1" value="{{ ms[0] }}">
+					        </div>
+
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="I_sigma1" value="{{ ms[1] }}">
+					        </div>
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="I_mu2" value="{{ ms[2] }}">
+					        </div>
+
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="I_sigma2" value="{{ ms[3] }}">
+					        </div>
+					    </div>
+
+					    <div class="form-group row">
+					        <label for="P4" class="col-sm-1 col-form-label" align="right">Slope - </label>
+
+							<div class="col-sm-2">
+								<input id="P4" class="form-control text-secondary" name="S" value="Steepness (Slope)">
+							</div>
+
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="S_mu1" value="1">
+					        </div>
+
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="S_sigma1" value="5">
+					        </div>
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="S_mu2" value="1">
+					        </div>
+
+					        <div class="col-sm-1">
+					        	<input type="number" step="0.01" class="form-control text-secondary" name="S_sigma2" value="5">
+					        </div>
+					    </div>
+					</div>
+				</div>
+
+				<br><br>
+
+				<div class="form-group row">
+					<div class="col-sm-10">
+						<button type="submit" class="btn btn-warning submit-wait" name="submit" value="comparaison">Analyze</button>
+					</div>
+				</div>
+			</form>
+
+
+			{% endif %}
+		</div>	
+
+		{% if graph %}
+		<br>
+		<div id="plotsComparaison" class="tab-pane fade in active">
+			<center><img class="media-object" src="{{ url_for('display', drc='tmp', img='plot_%s_1.png' % (ID)) }}" style="width:90%; height:90%"></center>
+
+			<br>
+			<br>
+
+			<center><img class="media-object" src="{{ url_for('display', drc='tmp', img='plot_%s_2.png' % (ID)) }}" style="width:90%; height:90%"></center>
+	
+			<br>
+			<br>
+
+			<center><img class="media-object" src="{{ url_for('display', drc='tmp', img='plot_%s_3.png' % (ID)) }}" style="width:90%; height:90%"></center>
+			<br>
+		</div>
+
+		<div id="pairwiseComparaison" class="tab-pane fade in">
+			<div class='row'>
+				<div class="col-sm-2">
+				</div>
+				<div class="col-sm-4">
+					<center><img class="media-object" src="{{ url_for('display', drc='tmp', img='pairwise_%s_1.png' % (ID)) }}" style="width:75%; height:75%"></center>
+					<br><br>
+				</div>
+				<div class="col-sm-4">
+					<center><img class="media-object" src="{{ url_for('display', drc='tmp', img='pairwise_%s_2.png' % (ID)) }}" style="width:75%; height:75%"></center>
+					<br><br>
+				</div>
+				<div class="col-sm-2">
+				</div>
+			</div>
+			<br>
+			<br>
+			<div class='row'>
+				<div class="col-sm-2">
+				</div>
+				<div class="col-sm-4">
+					<center><img class="media-object" src="{{ url_for('display', drc='tmp', img='pairwise_%s_3A.png' % (ID)) }}" style="width:75%; height:75%"></center>
+					<br><br>
+				</div>
+				<div class="col-sm-4">
+					<center><img class="media-object" src="{{ url_for('display', drc='tmp', img='pairwise_%s_3B.png' % (ID)) }}" style="width:75%; height:75%"></center>
+					<br><br>
+				</div>
+				<div class="col-sm-2">
+				</div>
+			</div>
+		</div>
+		<br>
+		
+		{% else %}
+		<div id="plotsComparaison" class="tab-pane fade in">
+			<br><br>
+			<center><p>No datasets to compare</p></center>
+		</div>
+
+		<div id="pairwiseComparaison" class="tab-pane fade in">
+				<br><br>
+				<center><p>No dataset to analyze</p></center>
+		</div>
+		{% endif %}
+
+		<div id="tablesComparaison" class="tab-pane fade in">
+			{% if tableData %}
+
+				{% for dataset in tableData %}
+					<div class="row">
+						<div class="col-sm-2">	
+						</div>	
+
+						<div class="col-sm-8">
+							<h3 class="text-secondary"> {{ dataset[0] }} </h3>		
+							<table class="table table-hover">
+								<thead>
+									<tr>
+										<th></th>
+										<th>0.5%</th>
+										<th>2.5%</th>
+										<th>5%</th>
+										<th>50%</th>
+										<th>95%</th>
+										<th>97.5%</th>
+										<th>99.5%</th>
+								 	</tr>
+								</thead>
+
+								{% for param, dict in dataset[1].items() %}
+									<tbody class='text-secondary'>
+									 	<tr>
+									 		<td class='text-info'>{{ param }}</td>
+
+									 		{% for key, val in dict.items() %}
+									 			<td> {{ val }} </td>
+									 		{% endfor %}
+
+										</tr>
+									</tbody>
+								{% endfor %}
+
+							</table>
+						</div>
+
+						<div class="col-sm-2">	
+						</div>	
+					</div>	
+				{% endfor %}
+
+			{% else %}
+			<br><br>
+			<center><p>No datasets to compare</p></center>
+			{% endif %}
+		</div>
+
+		<div id="logComparaison" class="tab-pane fade in">
+			<br><br>
+			<center><p>No log to show</p></center>
+		</div>
+
+	</div>
+</div>
+
+{% endblock %}
