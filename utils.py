@@ -22,7 +22,7 @@ ALLOWED_EXTENSIONS = set(["csv"])
 plt.style.use(["seaborn-whitegrid"])
 plt.rc("font", size=12)
 
-param = ["HDR", "LDR", "I", "S"]
+param = ["HDR", "LDR", "I", "S", "sigma"]
 #plotLabel = ["Maximal Response", "Minimal Response", r"IC$_{50}$", "Steepness (slope)"]
 htmlLabel = ["Maximal Response", "Minimal Response", "IC50", "Steepness (slope)"]
 
@@ -37,16 +37,8 @@ def saveFiles(file, template, ID, idx) :
 		return pd.read_csv(os.path.join(UPLOAD_FOLDER, filename), header=None, names=["x", "y"])
 
 	else :
-		return redirect(url_for("error", template=template, error="The uploaded file(s) must CSV"))
+		return redirect(url_for("error", template=template, error="The uploaded file(s) must be CSV"))
 
-def getTemplate(response, analysis) :
-	with open ("stan/%s%sTemplate.txt" % (response, analysis.title()), "r") as f:
-		emptyModel = f.read()
-	
-	return emptyModel
-
-def compileModel(code) :
-	return pystan.StanModel(model_code=code)
 
 def uniqueID():
 	now = datetime.datetime.now()
@@ -70,16 +62,11 @@ def norm(x, mu, sigma) :
 	return ss.norm.pdf(x, mu, sigma)
 
 def extractData(data) :
-	print (data)
 	x = list(data.iloc[:,0])
 	y = list(data.iloc[:,1])
 
-	#print 'np.min(x) - (4*np.min(x)))', (np.min(x) - (4*np.min(x)))
-	#print '(np.max(x) + (2*np.max(x)))', (np.max(x) + (2*np.max(x)))
-
 	x_infer = np.arange((np.min(x) - np.abs((4*np.min(x)))), (np.max(x) + np.abs((2*np.max(x)))), 0.1)
 
-	print (x_infer)
 	return x, y, x_infer
 
 def extractTableData(data, percentile) :
@@ -91,7 +78,7 @@ def extractTableData(data, percentile) :
 	return tmp
 
 def tableDataInference(data, idx, diff, ID, priorInfo) :
-	htmlLabel = [priorInfo["HDR"], priorInfo["LDR"], priorInfo["I"], priorInfo["S"]]
+	htmlLabel = [priorInfo["HDR"], priorInfo["LDR"], priorInfo["I"], priorInfo["S"], priorInfo["sigma"]]
 
 	percentile = [0.5, 2.5, 5, 50, 95, 97.5, 99.5]
 	df = pd.DataFrame(index=percentile)
@@ -114,21 +101,20 @@ def tableDataComparaison(data, ID, priorInfo) :
 
 
 def plotInference(ID, x, y, x_infer, graphInfo, stanResult, idx, priorInfo) :
-	plotLabel = [priorInfo["HDR"], priorInfo["LDR"], priorInfo["I"], priorInfo["S"]]
+	plotLabel = [priorInfo["HDR"], priorInfo["LDR"], priorInfo["I"], priorInfo["S"], priorInfo["sigma"]]
 
 	priors = collections.OrderedDict({"LDR%s" % (idx) : [float(priorInfo["LDR_mu%s" % (idx)]), float(priorInfo["LDR_sigma%s" % (idx)])], 
-									"HDR%s" % (idx) : [float(priorInfo["HDR_mu%s" % (idx)]), float(priorInfo["HDR_sigma%s" % (idx)])], 
-									"I%s" % (idx) : [float(priorInfo["I_mu%s" % (idx)]), float(priorInfo["I_sigma%s" % (idx)])], 
-									"S%s" % (idx) : [float(priorInfo["S_mu%s" % (idx)]), float(priorInfo["S_sigma%s" % (idx)])]})
+									"HDR%s" % (idx) : [float(priorInfo["HDR_mu%s" % (idx)]), float(priorInfo["HDR_sigma%s" % (idx)]), float(priorInfo["HDR_alpha%s" % (idx)])], 
+									"I%s" % (idx) : [float(priorInfo["I_alpha%s" % (idx)]), float(priorInfo["I_beta%s" % (idx)])], 
+									"S%s" % (idx) : [float(priorInfo["S_mu%s" % (idx)]), float(priorInfo["S_sigma%s" % (idx)])],
+									"sigma%s" % (idx) : [float(priorInfo["s_pos%s" % (idx)]), float(priorInfo["s_scale%s" % (idx)])]})
 
 	if idx :
 		C = "C%s" % (idx-1)
 	else :
 		C = "C1"
 
-	fig, ax = plt.subplots(1, 5, sharex="col", figsize=(19, 4))
-
-	print (stanResult)
+	fig, ax = plt.subplots(1, 6, sharex="col", figsize=(24, 4))
 
 	### Curve subplot
 	ax[0].axhline(y=np.median(stanResult["HDR%s" % (idx)]), ls="-", color="k", lw=1)
@@ -138,9 +124,9 @@ def plotInference(ID, x, y, x_infer, graphInfo, stanResult, idx, priorInfo) :
 	ax[0].plot(x, y, "o", color=C)
 	ax[0].axvspan(np.min(x), np.max(x), alpha=0.3, color="grey")
 
-	ax[0].plot(x_infer, getPercentile([x_infer, stanResult["y_predict_inference%s" % (idx)]], 50), "-", color=C, lw=2)
-	ax[0].plot(x_infer, getPercentile([x_infer, stanResult["y_predict_inference%s" % (idx)]], 2.5), "--", color=C, lw=1)
-	ax[0].plot(x_infer, getPercentile([x_infer, stanResult["y_predict_inference%s" % (idx)]], 97.5), "--", color=C, lw=1)
+	ax[0].plot(x_infer, getPercentile([x_infer, stanResult["y_infer%s" % (idx)]], 50), "-", color=C, lw=2)
+	ax[0].plot(x_infer, getPercentile([x_infer, stanResult["y_infer%s" % (idx)]], 2.5), "--", color=C, lw=1)
+	ax[0].plot(x_infer, getPercentile([x_infer, stanResult["y_infer%s" % (idx)]], 97.5), "--", color=C, lw=1)
 
 	ax[0].set_xlabel(graphInfo["xLabel"])
 	ax[0].set_ylabel(graphInfo["yLabel"])
@@ -155,10 +141,10 @@ def plotInference(ID, x, y, x_infer, graphInfo, stanResult, idx, priorInfo) :
 		ax[k+1].axvline(np.percentile(stanResult["%s%s" % (param[k], idx)], 2.5), ls="--", color=C)
 		ax[k+1].axvline(np.percentile(stanResult["%s%s" % (param[k], idx)], 97.5), ls="--", color=C)
 
-		xlim = (ax[k+1].get_xlim())
-		xPrior = np.arange(xlim[0], xlim[1], 0.1)
-		yPrior = norm(xPrior, priors["%s%s" % (param[k], idx)][0], priors["%s%s" % (param[k], idx)][1])
-		ax[k+1].plot(xPrior, yPrior, "-", color="grey", lw=2, alpha=0.7, label="Prior")
+		#xlim = (ax[k+1].get_xlim())
+		#xPrior = np.arange(xlim[0], xlim[1], 0.1)
+		#yPrior = norm(xPrior, priors["%s%s" % (param[k], idx)][0], priors["%s%s" % (param[k], idx)][1])
+		#ax[k+1].plot(xPrior, yPrior, "-", color="grey", lw=2, alpha=0.7, label="Prior")
 
 		ax[k+1].set_xlabel("Values")
 		ax[k+1].set_title("%s\n(95%s c.i.)" % (plotLabel[k], "%"))
@@ -190,10 +176,10 @@ def pairwiseInference(ID, x, y, x_infer, graphInfo, stanResult, idx, priorInfo):
 
 	fig, ax = plt.subplots(3, 3, figsize=(6, 6), sharex='col', sharey='row')
 
-	for i in range(0, len(param)-1) :
+	for i in range(0, len(param)-2) :
 		paramData1 = stanResult["%s%s" % (param[i], idx)]
 
-		for j in range(i, len(param)-1) :
+		for j in range(i, len(param)-2) :
 			paramData2 = stanResult["%s%s" % (param[j+1], idx)]
 
 			ax[j]

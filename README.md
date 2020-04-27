@@ -9,6 +9,8 @@ We describe our Bayesian approach in this paper: https://academic.oup.com/bioinf
 ### Branches
 The code for BiDRA as presented at ISMB 2019 can be found in the ``ismb_2019``branch. Current developments are added to the ``master``branch.
 
+**April 2020** : Inference of efficacy metrics given priors that are not exclusively gaussian (to come)
+
 ### Dependencies
 * Python3
 * PyStan (and Stan)

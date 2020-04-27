@@ -15,4 +15,4 @@ def saveModel(analysis) :
 
 
 saveModel("inference")
-saveModel("comparaison")
+#saveModel("comparaison")

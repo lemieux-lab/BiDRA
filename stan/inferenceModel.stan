@@ -1,38 +1,52 @@
 data {
-    int<lower=0> N;             // number of observations
-    int<lower=0> N_inference;   // number of values not tested
+    int<lower=0> N;        
     real x[N];
-    real x_inference[N_inference];
     real y[N];
-    real LDRmu;
-    real LDRsigma;
-    real HDRmu;
-    real HDRsigma;
-    real Imu;
-    real Isigma;
-    real Smu;
-    real Ssigma;
-    }    
+
+    int<lower=0> N_infer;
+    real x_infer[N_infer];
+
+    real HDR_mu;
+    real HDR_sigma;
+    real HDR_alpha;
+
+    real LDR_mu;
+    real LDR_sigma;
+
+    real I_alpha;
+    real I_beta;
+
+    real S_mu;
+    real S_sigma;
+
+    real s_pos; 
+    real s_scale;
+}
+
 parameters {
-    real LDR;          // low dose plateau
-    real HDR;          // high dose plateau
-    real I;          // ic50
-    real<lower=0> S; // slope
+    real<lower=0> HDR;
+    real LDR;                    
+    real<lower=-1> I;          
+    real<lower=0> S; 
     real<lower=0> sigma;
-    }
+}
+
 model {
-    LDR ~ normal(LDRmu, LDRsigma);
-    HDR ~ normal(HDRmu, HDRsigma);
-    I ~ normal(Imu, Isigma);
-    S ~ normal(Smu, Ssigma);
+    LDR ~ normal(LDR_mu, LDR_sigma);
+    HDR ~ normal(HDR_mu, HDR_sigma) T[HDR_alpha, ];
+    I ~ uniform(I_alpha, I_beta);
+    S ~ lognormal(S_mu, S_sigma);
+    sigma ~ cauchy(s_pos, s_scale);
     
     for (i in 1:N) {
         y[i] ~ normal(LDR + (HDR - LDR) / (1 + 10^(S * (I - x[i]))), sigma);
     }
+}
+
+generated quantities {
+    real y_infer[N_infer];
+
+    for (i in 1:N_infer) {
+        y_infer[i] = LDR + (HDR - LDR) / (1 + 10^(S * (I - x_infer[i])));
     }
-generated quantities{
-    real y_predict_inference[N_inference];
-    
-    for (k in 1:N_inference)
-        y_predict_inference[k] = LDR + (HDR - LDR) / (1 + 10.0^(S * (I - x_inference[k])));
-    }
+}

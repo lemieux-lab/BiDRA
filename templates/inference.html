@@ -268,84 +268,74 @@ function donwload_csv() {
 					<div class="col-sm-0.5">
 					</div>
 
-					<div class="col-sm-6">
-						<label class="row-form-label text-secondary">Priors</label>
+					<div class="col-sm-8">
+						<label class="row-form-label text-secondary">Priors & Efficacy Metrics</label>
 
-						<div class="form-group row">
-					        <div class="col-sm-5">
-					        </div>
+						<table class="table table-hover">
+							<thead>
+								<tr>
+									<th>Metric</th>
+									<th>Label</th>
+									<th>Distribution</th>
+									<th colspan="3">Parameters</th>
+								</tr>
+							</thead>
 
-					        <div class="col-sm-2">
-					        	<center><h4>&mu;</h4></center>
-					        </div>
+							<tbody class="text-secondary">
+								<tr>
+									<td>HDR</td>
+									<td><input id="P1" class="form-control text-secondary" name="HDR" value="Maximal Response"></td>
+									<td>$$\mathcal{N}(\mu, \sigma^{2}, \alpha)$$</td>
+									<td><input type="number" step="1" class="form-control text-secondary" name="HDR_mu" value="100"></td>
+									<td><input type="number" step="1" class="form-control text-secondary" name="HDR_sigma" value="20"></td>
+									<td><input type="number" step="1" class="form-control text-secondary" name="HDR_alpha" value="0"></td>
+								</tr>
+							</tbody>
 
-					        <div class="col-sm-2">
-					        	<center><h4>&sigma;</h4></center>
-					        </div>
-					    </div>
+							<tbody class="text-secondary">
+								<tr>
+									<td>LDR</td>
+									<td><input id="P2" class="form-control text-secondary" name="LDR" value="Minimal Response"></td>
+									<td>$$\mathcal{N}(\mu, \sigma^{2})$$</td>
+									<td><input type="number" step="1" class="form-control text-secondary" name="LDR_mu" value="0"></td>
+									<td><input type="number" step="1" class="form-control text-secondary" name="LDR_sigma" value="5"></td>
+									<td></td>
+								</tr>
+							</tbody>
 
-					    <div class="form-group row">
-					        <label for="P1" class="col-sm-2 col-form-label" align="right">HDR - </label>
+							<tbody class="text-secondary">
+								<tr>
+									<td>Inflexion (IC<sub>50</sub>/EC<sub>50</sub>)</td>
+									<td><input id="P3" class="form-control text-secondary" name="I" value="IC50"></td>
+									<td>$$\mathcal{U}(\alpha, \beta)$$</td>
+									<td><input type="number" step="0.01" class="form-control text-secondary" name="I_alpha" value="-1"></td>
+									<td><input type="number" step="0.01" class="form-control text-secondary" name="I_beta" value="10"></td>
+									<td></td>
+								</tr>
+							</tbody>
 
-							<div class="col-sm-3">
-								<input id="P1" class="form-control text-secondary" name="HDR" value="Maximal Response">
-							</div>
+							<tbody class="text-secondary">
+								<tr>
+									<td>Slope</td>
+									<td><input id="P4" class="form-control text-secondary" name="S" value="Steepness"></td>
+									<td>$$\mbox{Lognormal}(\mu, \sigma^{2})$$</td>
+									<td><input type="number" step="0.01" class="form-control text-secondary" name="S_mu" value="0.5"></td>
+									<td><input type="number" step="0.01" class="form-control text-secondary" name="S_sigma" value="1"></td>
+									<td></td>
+								</tr>
+							</tbody>
 
-					        <div class="col-sm-2">
-					        	<input type="number" step="0.01" class="form-control text-secondary" name="HDR_mu" value="100">
-					        </div>
-
-					        <div class="col-sm-2">
-					        	<input type="number" step="0.01" class="form-control text-secondary" name="HDR_sigma" value="10">
-					        </div>
-					    </div>
-
-					    <div class="form-group row">
-					        <label for="P2" class="col-sm-2 col-form-label" align="right">LDR - </label>
-
-							<div class="col-sm-3">
-								<input id="P2" class="form-control text-secondary" name="LDR" value="Minimal Response">
-							</div>
-
-					        <div class="col-sm-2">
-					        	<input type="number" step="0.01" class="form-control text-secondary" name="LDR_mu" value="0">
-					        </div>
-
-					        <div class="col-sm-2">
-					        	<input type="number" step="0.01" class="form-control text-secondary" name="LDR_sigma" value="10">
-					        </div>
-					    </div>
-
-					    <div class="form-group row">
-					        <label for="P3" class="col-sm-2 col-form-label" align="right">Inflexion - </label>
-							<div class="col-sm-3">
-								<input id="P3" class="form-control text-secondary" name="I" value="IC50">
-							</div>
-
-					        <div class="col-sm-2">
-					        	<input type="number" step="0.01" class="form-control text-secondary" name="I_mu" value="{{ ms[0] }}">
-					        </div>
-
-					        <div class="col-sm-2">
-					        	<input type="number" step="0.01" class="form-control text-secondary" name="I_sigma" value="{{ ms[1] }}">
-					        </div>
-					    </div>
-
-					    <div class="form-group row">
-					        <label for="P4" class="col-sm-2 col-form-label" align="right">Slope - </label>
-
-							<div class="col-sm-3">
-								<input id="P4" class="form-control text-secondary" name="S" value="Steepness (Slope)">
-							</div>
-
-					        <div class="col-sm-2">
-					        	<input type="number" step="0.01" class="form-control text-secondary" name="S_mu" value="1">
-					        </div>
-
-					        <div class="col-sm-2">
-					        	<input type="number" step="0.01" class="form-control text-secondary" name="S_sigma" value="5">
-					        </div>
-					    </div>
+							<tbody class="text-secondary">
+								<tr>
+									<td>Sigma/Noise</td>
+									<td><input id="P5" class="form-control text-secondary" name="sigma" value="Response noise"></td>
+									<td>$$\mbox{Cauchy}(x_{0}, \gamma)$$</td>
+									<td><input type="number" step="0.01" class="form-control text-secondary" name="s_pos" value="0"></td>
+									<td><input type="number" step="0.01" class="form-control text-secondary" name="s_scale" value="0.2"></td>
+									<td></td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</div>
 

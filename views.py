@@ -21,14 +21,6 @@ IM = loadModel("inference")
 CM = loadModel("comparaison")
 
 ##### GLOBAL VARIABLE
-global mu1
-mu1 = 1.0
-global sigma1
-sigma1 = 1.0
-global mu2
-mu2 = 1.0
-global sigma2
-sigma2 = 1.0
 global userData
 userData = []
 
@@ -39,7 +31,7 @@ def main() :
 
 @app.route("/inference/<form>", methods=["GET", "POST"], endpoint="inference")
 def inference(form) :
-	return render_template("inference.html", title="Inference", form=form, ms=[mu1, sigma1])
+	return render_template("inference.html", title="Inference", form=form)
 
 @app.route("/comparaison/<form>", methods=["GET", "POST"], endpoint="comparaison")
 def comparaison(form) :
@@ -80,7 +72,6 @@ def selection() :
 def upload() :
 	global ID
 	ID = uniqueID()
-	print (ID, ':)')
 
 	#Extract data from teh HTML form
 	if request.method == "POST" :
@@ -89,8 +80,6 @@ def upload() :
 
 		### Save file(s)
 		if request.files.keys() :
-			#global userData
-			#userData = []
 			c = 1
 
 			for dataset in request.files.keys() :
@@ -109,24 +98,6 @@ def upload() :
 		else :
 			return redirect(url_for("error", template=graphInfo["submit"], error="Dataset(s) file(s) must be uploaded"))
 
-	tmp = userData[0].x
-
-	global mu1
-	mu1 = np.round(np.min(tmp) + (np.max(tmp) - np.min(tmp)) / 2.0, 2)
-
-	global sigma1
-	sigma1 = np.round((np.min(tmp) - mu1) / -3.0, 2)
-	print (c)
-	if c > 2 :
-		tmp = userData[1].x
-
-		global mu2
-		mu2 = np.round(np.min(tmp) + (np.max(tmp) - np.min(tmp)) / 2.0, 2)
-
-		global sigma2
-		sigma2 = np.round((np.min(tmp) - mu2) / -3.0, 2)
-
-
 	return redirect(url_for(graphInfo["submit"], form="priors"))
 
 
@@ -140,12 +111,16 @@ def analyze():
 		if analysis == "inference" :
 			print (userData)
 			x, y, x_infer = extractData(userData[0])
+
 			print ('1 - Organizing the data')	
-			stanData = {"N" : len(x), "N_inference" : len(x_infer), "x" : x, "x_inference" : x_infer, "y" : y,
-						"LDRmu" : float(priorInfo["LDR_mu"]), "LDRsigma" : float(priorInfo["LDR_sigma"]),
-						"HDRmu" : float(priorInfo["HDR_mu"]), "HDRsigma" : float(priorInfo["HDR_sigma"]),
-						"Imu" : float(priorInfo["I_mu"]), "Isigma" : float(priorInfo["I_sigma"]),
-						"Smu" : float(priorInfo["S_mu"]), "Ssigma" : float(priorInfo["S_sigma"])}
+			stanData = {"N" : len(x), "x" : x, "y" : y,
+						"N_infer" : len(x_infer), "x_infer" : x_infer,
+						"LDR_mu" : float(priorInfo["LDR_mu"]), "LDR_sigma" : float(priorInfo["LDR_sigma"]),
+						"HDR_mu" : float(priorInfo["HDR_mu"]), "HDR_sigma" : float(priorInfo["HDR_sigma"]), "HDR_alpha" : float(priorInfo["HDR_alpha"]),
+						"I_alpha" : float(priorInfo["I_alpha"]), "I_beta" : float(priorInfo["I_beta"]),
+						"S_mu" : float(priorInfo["S_mu"]), "S_sigma" : float(priorInfo["S_sigma"]),
+						"s_pos" : float(priorInfo["s_pos"]), "s_scale" : float(priorInfo["s_scale"])}
+
 			print ('2 - Running the model')
 			stanResult = runModel(IM, stanData)
 
