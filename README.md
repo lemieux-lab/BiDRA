@@ -10,4 +10,14 @@ The code for BiDRA as presented at ISMB 2019 can be found in the ``ismb_2019``br
 
 
 <h3>Dependencies</h3>
-- 
+- Python3
+- PyStan (and Stan)
+- Flask
+- Matplotlib
+- Pickle
+
+<h3>Launch a local instance of BiDRA</h3>
+1. Clone this repo
+2. Create a ``tmp``directory to store data and figures
+3. Within the ``stan`` repo, run ``compileStan.py`` to generate the compiled inference models
+4. Launch the interface locally by running ``run.py``
