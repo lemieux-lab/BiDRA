@@ -61,6 +61,23 @@ def getPercentile(data, p) :
 def norm(x, mu, sigma) :
 	return ss.norm.pdf(x, mu, sigma)
 
+def uni(x, alpha, beta) :
+	pdf = []
+
+	for i in x :
+		if i < alpha or i > beta :
+			pdf += [0.0]
+		else : 
+			pdf += [1.0 / (beta - alpha)]
+	
+	return pdf
+
+def lognorm(x, mu, sigma) :
+	return (np.exp(-(np.log(x) - mu)**2 / (2 * sigma**2)) / (x * sigma * np.sqrt(2 * np.pi)))
+
+def cauchy(x, x0, gamma) :
+	return ss.cauchy.pdf(x, x0, gamma)
+
 def extractData(data) :
 	x = list(data.iloc[:,0])
 	y = list(data.iloc[:,1])
@@ -103,11 +120,11 @@ def tableDataComparaison(data, ID, priorInfo) :
 def plotInference(ID, x, y, x_infer, graphInfo, stanResult, idx, priorInfo) :
 	plotLabel = [priorInfo["HDR"], priorInfo["LDR"], priorInfo["I"], priorInfo["S"], priorInfo["sigma"]]
 
-	priors = collections.OrderedDict({"LDR%s" % (idx) : [float(priorInfo["LDR_mu%s" % (idx)]), float(priorInfo["LDR_sigma%s" % (idx)])], 
-									"HDR%s" % (idx) : [float(priorInfo["HDR_mu%s" % (idx)]), float(priorInfo["HDR_sigma%s" % (idx)]), float(priorInfo["HDR_alpha%s" % (idx)])], 
-									"I%s" % (idx) : [float(priorInfo["I_alpha%s" % (idx)]), float(priorInfo["I_beta%s" % (idx)])], 
-									"S%s" % (idx) : [float(priorInfo["S_mu%s" % (idx)]), float(priorInfo["S_sigma%s" % (idx)])],
-									"sigma%s" % (idx) : [float(priorInfo["s_pos%s" % (idx)]), float(priorInfo["s_scale%s" % (idx)])]})
+	priors = collections.OrderedDict({"LDR%s" % (idx) : [norm, float(priorInfo["LDR_mu%s" % (idx)]), float(priorInfo["LDR_sigma%s" % (idx)])], 
+									"HDR%s" % (idx) : [norm, float(priorInfo["HDR_mu%s" % (idx)]), float(priorInfo["HDR_sigma%s" % (idx)]), float(priorInfo["HDR_alpha%s" % (idx)])], 
+									"I%s" % (idx) : [uni, float(priorInfo["I_alpha%s" % (idx)]), float(priorInfo["I_beta%s" % (idx)])], 
+									"S%s" % (idx) : [lognorm, float(priorInfo["S_mu%s" % (idx)]), float(priorInfo["S_sigma%s" % (idx)])],
+									"sigma%s" % (idx) : [cauchy, float(priorInfo["s_pos%s" % (idx)]), float(priorInfo["s_scale%s" % (idx)])]})
 
 	if idx :
 		C = "C%s" % (idx-1)
@@ -141,10 +158,12 @@ def plotInference(ID, x, y, x_infer, graphInfo, stanResult, idx, priorInfo) :
 		ax[k+1].axvline(np.percentile(stanResult["%s%s" % (param[k], idx)], 2.5), ls="--", color=C)
 		ax[k+1].axvline(np.percentile(stanResult["%s%s" % (param[k], idx)], 97.5), ls="--", color=C)
 
-		#xlim = (ax[k+1].get_xlim())
-		#xPrior = np.arange(xlim[0], xlim[1], 0.1)
-		#yPrior = norm(xPrior, priors["%s%s" % (param[k], idx)][0], priors["%s%s" % (param[k], idx)][1])
-		#ax[k+1].plot(xPrior, yPrior, "-", color="grey", lw=2, alpha=0.7, label="Prior")
+		dist = priors["%s%s" % (param[k], idx)][0]
+
+		xlim = (ax[k+1].get_xlim())
+		xPrior = np.arange(xlim[0], xlim[1], 0.1)
+		yPrior = dist(xPrior, priors["%s%s" % (param[k], idx)][1], priors["%s%s" % (param[k], idx)][2])
+		ax[k+1].plot(xPrior, yPrior, "-", color="grey", lw=2, alpha=0.7, label="Prior")
 
 		ax[k+1].set_xlabel("Values")
 		ax[k+1].set_title("%s\n(95%s c.i.)" % (plotLabel[k], "%"))

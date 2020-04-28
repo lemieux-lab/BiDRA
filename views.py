@@ -20,10 +20,6 @@ UPLOAD_FOLDER = 'tmp/'
 IM = loadModel("inference")
 CM = loadModel("comparaison")
 
-##### GLOBAL VARIABLE
-global userData
-userData = []
-
 ##### VIEWS
 @app.route("/", methods=["GET", "POST"], endpoint="index")
 def main() :
@@ -73,6 +69,9 @@ def upload() :
 	global ID
 	ID = uniqueID()
 
+	global userData
+	userData = []
+
 	#Extract data from teh HTML form
 	if request.method == "POST" :
 		global graphInfo
@@ -87,7 +86,7 @@ def upload() :
 				tmpOutput = saveFiles(file, graphInfo["submit"], ID, c)
 
 				if isinstance(tmpOutput, pd.DataFrame) :
-					global userData
+					#global userData
 					userData.append(tmpOutput)
 
 				else :

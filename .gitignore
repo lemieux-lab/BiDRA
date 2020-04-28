@@ -1,5 +1,7 @@
 __pycache__
 tmp
-.DS_Store
+data
 stan/*.pkl
+templates/inference.log
+.DS_Store
 .ipynb
