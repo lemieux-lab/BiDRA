@@ -3,5 +3,6 @@ tmp
 data
 stan/*.pkl
 templates/inference.log
+.ipynb_checkpoints
 .DS_Store
 .ipynb
