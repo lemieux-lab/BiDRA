@@ -14,5 +14,5 @@ def saveModel(analysis) :
 	print ("-------- Done")
 
 
-saveModel("inference")
-#saveModel("comparaison")
+#saveModel("inference")
+saveModel("comparaison")

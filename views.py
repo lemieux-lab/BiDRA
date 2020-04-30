@@ -31,7 +31,7 @@ def inference(form) :
 
 @app.route("/comparaison/<form>", methods=["GET", "POST"], endpoint="comparaison")
 def comparaison(form) :
-	return render_template("comparaison.html", title="Comparaison", form=form, ms=[mu1, sigma1, mu2, sigma2])
+	return render_template("comparaison.html", title="Comparaison", form=form)
 
 @app.route("/ERROR/<template>/<error>", methods=["GET", "POST"], endpoint="error")
 def error(template, error) :
@@ -134,17 +134,22 @@ def analyze():
 			x2, y2, x_infer2 = extractData(userData[1])
 			x_infer = np.sort(list(set(x_infer1).union(set(x_infer2))))
 
-			stanData = {'N1':len(x1), 'x1':x1, 'y1':y1,  
+			print (priorInfo)
+
+			stanData = {'N1':len(x1), 'x1':x1, 'y1':y1,
 						'N2':len(x2), 'x2':x2, 'y2':y2,
-						'N_inference':len(x_infer), 'x_inference':x_infer,
-						"LDRmu1" : float(priorInfo["LDR_mu1"]), "LDRsigma1" : float(priorInfo["LDR_sigma1"]),
-						"LDRmu2" : float(priorInfo["LDR_mu2"]), "LDRsigma2" : float(priorInfo["LDR_sigma2"]),
-						"HDRmu1" : float(priorInfo["HDR_mu1"]), "HDRsigma1" : float(priorInfo["HDR_sigma1"]),
-						"HDRmu2" : float(priorInfo["HDR_mu2"]), "HDRsigma2" : float(priorInfo["HDR_sigma2"]),
-						"Imu1" : float(priorInfo["I_mu1"]), "Isigma1" : float(priorInfo["I_sigma1"]),
-						"Imu2" : float(priorInfo["I_mu2"]), "Isigma2" : float(priorInfo["I_sigma2"]),
-						"Smu1" : float(priorInfo["S_mu1"]), "Ssigma1" : float(priorInfo["S_sigma1"]),
-						"Smu2" : float(priorInfo["S_mu2"]), "Ssigma2" : float(priorInfo["S_sigma2"])}
+						'N_infer':len(x_infer), 'x_infer':x_infer,
+						"LDR_mu" : [float(priorInfo["LDR_mu1"]), float(priorInfo["LDR_mu2"])], 
+						"LDR_sigma" : [float(priorInfo["LDR_sigma1"]), float(priorInfo["LDR_sigma2"])],
+						"HDR_mu" : [float(priorInfo["HDR_mu1"]), float(priorInfo["HDR_mu2"])], 
+						"HDR_sigma" : [float(priorInfo["HDR_sigma1"]), float(priorInfo["HDR_sigma2"])], 
+						"HDR_alpha" : [float(priorInfo["HDR_alpha1"]), float(priorInfo["HDR_alpha2"])],
+						"I_alpha" : [float(priorInfo["I_alpha1"]), float(priorInfo["I_alpha2"])], 
+						"I_beta" : [float(priorInfo["I_beta1"]), float(priorInfo["I_beta2"])],
+						"S_mu" : [float(priorInfo["S_mu1"]), float(priorInfo["S_mu2"])],
+						"S_sigma" : [float(priorInfo["S_sigma1"]), float(priorInfo["S_sigma2"])],
+						"s_pos" : [float(priorInfo["s_pos1"]), float(priorInfo["s_pos2"])], 
+						"s_scale" : [float(priorInfo["s_scale1"]), float(priorInfo["s_scale2"])]}
 
 			stanResult = runModel(CM, stanData)
 

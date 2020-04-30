@@ -100,7 +100,7 @@ def tableDataInference(data, idx, diff, ID, priorInfo) :
 	percentile = [0.5, 2.5, 5, 50, 95, 97.5, 99.5]
 	df = pd.DataFrame(index=percentile)
 
-	for i in range(0, len(param)) :
+	for i in range(0, len(param)-1) :
 		df.loc[:, htmlLabel[i]] = extractTableData(data["%s%s%s" % (diff, param[i], idx) ], percentile)
 
 	if idx :
@@ -236,15 +236,15 @@ def plotComparaison(ID, x, y, x_infer, graphInfo, stanResult, priorInfo) :
 
 	### Curves and Data
 	for i in [1, 2] :
-		l = getPercentile([x_infer, stanResult["y_predict_inference%s" % (i)]], 2.5)
-		u = getPercentile([x_infer, stanResult["y_predict_inference%s" % (i)]], 97.5)
+		l = getPercentile([x_infer, stanResult["y_infer%s" % (i)]], 2.5)
+		u = getPercentile([x_infer, stanResult["y_infer%s" % (i)]], 97.5)
 
 		ax[0][0].plot(x_infer, l, "--", lw=1, color="C%d" % (i-1))
 		ax[0][0].plot(x_infer, u, "--", lw=1, color="C%d" % (i-1))
 		ax[0][0].fill_between(x_infer, l, u, color="C%d" % (i-1), alpha = 0.3)
 
 		ax[0][0].plot(x[i-1], y[i-1], "o", label=graphInfo["labelDataset%s" % (i)])
-		ax[0][0].plot(x_infer, getPercentile([x_infer, stanResult["y_predict_inference%s" % (i)]], 50), "-", lw=2, color="C%d" % (i-1))
+		ax[0][0].plot(x_infer, getPercentile([x_infer, stanResult["y_infer%s" % (i)]], 50), "-", lw=2, color="C%d" % (i-1))
 
 	ax[0][0].set_xlabel(graphInfo["xLabel"])
 	ax[0][0].set_ylabel(graphInfo["yLabel"])
@@ -253,7 +253,7 @@ def plotComparaison(ID, x, y, x_infer, graphInfo, stanResult, priorInfo) :
 	ax[0][0].legend()
 
 	### Parameter and difference distributions
-	for k in range(0, len(param)) :
+	for k in range(0, len(param)-1) :
 		paramData = [stanResult["%s1" % (param[k])], stanResult["%s2" % (param[k])]]
 
 		ax[0][k+1].hist(paramData, stacked=True, color=["C0", "C1"], density=True)
@@ -316,13 +316,13 @@ def pairwiseComparaison(ID, x, y, x_infer, graphInfo, stanResult, priorInfo):
 
 	fig, ax = plt.subplots(3, 3, figsize=(6, 6), sharex='col', sharey='row')
 
-	for i in range(0, len(param)-1) :
+	for i in range(0, len(param)-2) :
 		paramData1 = [stanResult["%s1" % (param[i])], stanResult["%s2" % (param[i])]]
 
-		for j in range(i, len(param)-1) :
+		for j in range(i, len(param)-2) :
 			paramData2 = [stanResult["%s1" % (param[j+1])], stanResult["%s2" % (param[j+1])]]
 
-			ax[j]
+			#ax[j]
 			ax[j][i].plot(paramData1[0], paramData2[0], 'o', color='C0', alpha=0.4)
 			ax[j][i].plot(paramData1[1], paramData2[1], 'o', color='C1', alpha=0.4)
 			ax[j][0].set_ylabel(plotLabel[j+1])
@@ -342,13 +342,13 @@ def pairwiseComparaison(ID, x, y, x_infer, graphInfo, stanResult, priorInfo):
 
 	fig, ax = plt.subplots(3, 3, figsize=(6, 6), sharex='col', sharey='row')
 
-	for i in range(0, len(param)-1) :
+	for i in range(0, len(param)-2) :
 		paramData1 = [stanResult["%s1" % (param[i])], stanResult["%s2" % (param[i])]]
 
-		for j in range(i, len(param)-1) :
+		for j in range(i, len(param)-2) :
 			paramData2 = [stanResult["%s1" % (param[j+1])], stanResult["%s2" % (param[j+1])]]
 
-			ax[j]
+			#ax[j]
 			ax[j][i].plot(paramData1[1], paramData2[1], 'o', color='C1', alpha=0.4)
 			ax[j][i].plot(paramData1[0], paramData2[0], 'o', color='C0', alpha=0.4)
 			ax[j][0].set_ylabel(plotLabel[j+1])

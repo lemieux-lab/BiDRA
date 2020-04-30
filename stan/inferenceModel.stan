@@ -24,7 +24,7 @@ data {
 }
 
 parameters {
-    real<lower=0> HDR;
+    real HDR;
     real LDR;                    
     real<lower=-1> I;          
     real<lower=0> S; 
