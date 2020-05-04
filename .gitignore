@@ -2,7 +2,9 @@ __pycache__
 tmp
 data
 stan/*.pkl
-templates/inference.log
+stan/comparaisonModel.stan
+stan/inferenceMondel.stan
+templates/*.log
 .ipynb_checkpoints
 .DS_Store
 .ipynb
