@@ -2,12 +2,18 @@ import os
 from pystan import *
 import pickle
 
+dataType = ['activity', 'inhibition']
+
 def loadModel(analysis) :
-	return pickle.load(open("stan/%sModel.pkl" % (analysis.lower()), "rb"))
+	models = {}
+
+	for dt in dataType :
+		models[dt] = pickle.load(open("stan/%s_%s_model.pkl" % (dt, analysis), "rb"))
+
+	return models
 
 def runModel(sm, data) :
 	print ('--- Running the model')
-	print (data)
 	
 	fit = sm.sampling(data=data, chains=4, iter=4000, warmup=2000)
 	print (fit)

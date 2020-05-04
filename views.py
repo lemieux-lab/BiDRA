@@ -18,7 +18,7 @@ UPLOAD_FOLDER = 'tmp/'
 
 ##### STAN MODELS
 IM = loadModel("inference")
-CM = loadModel("comparaison")
+CM = loadModel("comparison")
 
 ##### VIEWS
 @app.route("/", methods=["GET", "POST"], endpoint="index")
@@ -29,9 +29,9 @@ def main() :
 def inference(form) :
 	return render_template("inference.html", title="Inference", form=form)
 
-@app.route("/comparaison/<form>", methods=["GET", "POST"], endpoint="comparaison")
-def comparaison(form) :
-	return render_template("comparaison.html", title="Comparaison", form=form)
+@app.route("/comparison/<form>", methods=["GET", "POST"], endpoint="comparison")
+def comparison(form) :
+	return render_template("comparison.html", title="Comparison", form=form)
 
 @app.route("/ERROR/<template>/<error>", methods=["GET", "POST"], endpoint="error")
 def error(template, error) :
@@ -39,12 +39,12 @@ def error(template, error) :
 
 @app.route("/<template>/plot/<ID>", methods=["GET", "POST"], endpoint="plot")
 def plot(template, ID) :
-	if template == "comparaison" :
+	if template == "comparison" :
 		data = []
 
 		data.append(("Percentile Values - Dataset1", pd.read_pickle("tmp/table_%s_1" % ID)))
 		data.append(("Percentile Values - Dataset2", pd.read_pickle("tmp/table_%s_2" % ID)))
-		data.append(("Percentile Values - Comparaison", pd.read_pickle("tmp/table_%s_3" % ID)))
+		data.append(("Percentile Values - Comparison", pd.read_pickle("tmp/table_%s_3" % ID)))
 
 	else :
 		data = [("Percentile Values", pd.read_pickle("tmp/table_%s" % ID))]
@@ -86,7 +86,6 @@ def upload() :
 				tmpOutput = saveFiles(file, graphInfo["submit"], ID, c)
 
 				if isinstance(tmpOutput, pd.DataFrame) :
-					#global userData
 					userData.append(tmpOutput)
 
 				else :
@@ -108,20 +107,19 @@ def analyze():
 		analysis = priorInfo["submit"]
 
 		if analysis == "inference" :
-			print (userData)
 			x, y, x_infer = extractData(userData[0])
 
 			print ('1 - Organizing the data')	
 			stanData = {"N" : len(x), "x" : x, "y" : y,
 						"N_infer" : len(x_infer), "x_infer" : x_infer,
 						"LDR_mu" : float(priorInfo["LDR_mu"]), "LDR_sigma" : float(priorInfo["LDR_sigma"]),
-						"HDR_mu" : float(priorInfo["HDR_mu"]), "HDR_sigma" : float(priorInfo["HDR_sigma"]), "HDR_alpha" : float(priorInfo["HDR_alpha"]),
+						"HDR_mu" : float(priorInfo["HDR_mu"]), "HDR_sigma" : float(priorInfo["HDR_sigma"]),
 						"I_alpha" : float(priorInfo["I_alpha"]), "I_beta" : float(priorInfo["I_beta"]),
 						"S_mu" : float(priorInfo["S_mu"]), "S_sigma" : float(priorInfo["S_sigma"]),
 						"s_pos" : float(priorInfo["s_pos"]), "s_scale" : float(priorInfo["s_scale"])}
 
 			print ('2 - Running the model')
-			stanResult = runModel(IM, stanData)
+			stanResult = runModel(IM[priorInfo["responseType"]], stanData)
 
 			print ('3 - Plotting the results')
 			plotInference(ID, x, y, x_infer, graphInfo, stanResult, "", priorInfo)
@@ -129,7 +127,7 @@ def analyze():
 			print ('4 - Creating the results tables')
 			tableDataInference(stanResult, "", "", ID, priorInfo)
 
-		elif analysis == "comparaison" :
+		elif analysis == "comparison" :
 			x1, y1, x_infer1 = extractData(userData[0])
 			x2, y2, x_infer2 = extractData(userData[1])
 			x_infer = np.sort(list(set(x_infer1).union(set(x_infer2))))
@@ -142,8 +140,7 @@ def analyze():
 						"LDR_mu" : [float(priorInfo["LDR_mu1"]), float(priorInfo["LDR_mu2"])], 
 						"LDR_sigma" : [float(priorInfo["LDR_sigma1"]), float(priorInfo["LDR_sigma2"])],
 						"HDR_mu" : [float(priorInfo["HDR_mu1"]), float(priorInfo["HDR_mu2"])], 
-						"HDR_sigma" : [float(priorInfo["HDR_sigma1"]), float(priorInfo["HDR_sigma2"])], 
-						"HDR_alpha" : [float(priorInfo["HDR_alpha1"]), float(priorInfo["HDR_alpha2"])],
+						"HDR_sigma" : [float(priorInfo["HDR_sigma1"]), float(priorInfo["HDR_sigma2"])],
 						"I_alpha" : [float(priorInfo["I_alpha1"]), float(priorInfo["I_alpha2"])], 
 						"I_beta" : [float(priorInfo["I_beta1"]), float(priorInfo["I_beta2"])],
 						"S_mu" : [float(priorInfo["S_mu1"]), float(priorInfo["S_mu2"])],
@@ -151,11 +148,11 @@ def analyze():
 						"s_pos" : [float(priorInfo["s_pos1"]), float(priorInfo["s_pos2"])], 
 						"s_scale" : [float(priorInfo["s_scale1"]), float(priorInfo["s_scale2"])]}
 
-			stanResult = runModel(CM, stanData)
+			stanResult = runModel(CM[priorInfo["responseType"]], stanData)
 
-			plotComparaison(ID, [x1, x2], [y1, y2], x_infer, graphInfo, stanResult, priorInfo)
-			pairwiseComparaison(ID, [x1, x2], [y1, y2], x_infer, graphInfo, stanResult, priorInfo)
-			tableDataComparaison(stanResult, ID, priorInfo)
+			plotComparison(ID, [x1, x2], [y1, y2], x_infer, graphInfo, stanResult, priorInfo)
+			pairwiseComparison(ID, [x1, x2], [y1, y2], x_infer, graphInfo, stanResult, priorInfo)
+			tableDataComparison(stanResult, ID, priorInfo)
 
 		return redirect(url_for('plot', template=analysis, ID=ID))
 

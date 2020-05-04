@@ -110,7 +110,7 @@ def tableDataInference(data, idx, diff, ID, priorInfo) :
 	else :
 		df.to_pickle("tmp/table_%s" % (ID))
 
-def tableDataComparaison(data, ID, priorInfo) :
+def tableDataComparison(data, ID, priorInfo) :
 	for i in [1, 2] :
 		tableDataInference(data, i, "", ID, priorInfo)
 
@@ -120,8 +120,9 @@ def tableDataComparaison(data, ID, priorInfo) :
 def plotInference(ID, x, y, x_infer, graphInfo, stanResult, idx, priorInfo) :
 	plotLabel = [priorInfo["HDR"], priorInfo["LDR"], priorInfo["I"], priorInfo["S"], priorInfo["sigma"]]
 
-	priors = collections.OrderedDict({"LDR%s" % (idx) : [norm, float(priorInfo["LDR_mu%s" % (idx)]), float(priorInfo["LDR_sigma%s" % (idx)])], 
-									"HDR%s" % (idx) : [norm, float(priorInfo["HDR_mu%s" % (idx)]), float(priorInfo["HDR_sigma%s" % (idx)]), float(priorInfo["HDR_alpha%s" % (idx)])], 
+	priors = collections.OrderedDict({
+									"LDR%s" % (idx) : [norm, float(priorInfo["LDR_mu%s" % (idx)]), float(priorInfo["LDR_sigma%s" % (idx)])], 
+									"HDR%s" % (idx) : [norm, float(priorInfo["HDR_mu%s" % (idx)]), float(priorInfo["HDR_sigma%s" % (idx)])], 
 									"I%s" % (idx) : [uni, float(priorInfo["I_alpha%s" % (idx)]), float(priorInfo["I_beta%s" % (idx)])], 
 									"S%s" % (idx) : [lognorm, float(priorInfo["S_mu%s" % (idx)]), float(priorInfo["S_sigma%s" % (idx)])],
 									"sigma%s" % (idx) : [cauchy, float(priorInfo["s_pos%s" % (idx)]), float(priorInfo["s_scale%s" % (idx)])]})
@@ -226,7 +227,7 @@ def pairwiseInference(ID, x, y, x_infer, graphInfo, stanResult, idx, priorInfo):
 		plt.savefig("tmp/pairwise_%s.png" % (ID), orientation="landscape", format="png")	
 	
 
-def plotComparaison(ID, x, y, x_infer, graphInfo, stanResult, priorInfo) :
+def plotComparison(ID, x, y, x_infer, graphInfo, stanResult, priorInfo) :
 	plotLabel = [priorInfo["HDR"], priorInfo["LDR"], priorInfo["I"], priorInfo["S"]]
 
 	plotInference(ID, x[0], y[0], x_infer, graphInfo, stanResult, 1, priorInfo)
@@ -308,7 +309,7 @@ def plotComparaison(ID, x, y, x_infer, graphInfo, stanResult, priorInfo) :
 	plt.savefig("tmp/plot_%s_3.pdf" % (ID), orientation="landscape", format="pdf")
 	plt.savefig("tmp/plot_%s_3.png" % (ID), orientation="landscape", format="png")
 
-def pairwiseComparaison(ID, x, y, x_infer, graphInfo, stanResult, priorInfo):
+def pairwiseComparison(ID, x, y, x_infer, graphInfo, stanResult, priorInfo):
 	plotLabel = [priorInfo["HDR"], priorInfo["LDR"], priorInfo["I"], priorInfo["S"]]
 
 	pairwiseInference(ID, x[0], y[0], x_infer, graphInfo, stanResult, 1, priorInfo)
